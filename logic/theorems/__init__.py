@@ -1,0 +1,1 @@
+from .deduction_theorem import deduction_theorem
