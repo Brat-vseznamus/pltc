@@ -2,6 +2,7 @@ from typing import List, Union, Tuple, Optional
 
 from logic.expr import Expr, Impl
 from logic.axioms import Axiom
+from logic.context import Context
 
 class Assumption:
     def __init__(self, index: int):
@@ -30,7 +31,7 @@ class ProofStep:
         self.proof_type = proof_type
 
 class Proof:
-    def __init__(self, context: List[Expr], steps: List[ProofStep]):
+    def __init__(self, context: Context, steps: List[ProofStep]):
         self.context = context
         self.steps = steps
     
