@@ -6,9 +6,9 @@ Library for creating and verifing logic proofs in simple and declarative style.
 
 You can see examples in [examples](examples/):
 
-* [$\vdash A\vee B\to B \vee A$](examples/ex2.py)
-* [$\vdash A\vee (B\vee C)\to(A\vee B) \vee C$](examples/ex3.py)
-* [$\vdash (A\to B\to C)\to(B\to A \to C)$](examples/ex1.py)
+* $\vdash A\vee B\to B \vee A$ [(link)](examples/ex2.py)
+* $\vdash A\vee (B\vee C)\to(A\vee B) \vee C$ [(link)](examples/ex3.py)
+* $\vdash (A\to B\to C)\to(B\to A \to C)$ [(link)](examples/ex1.py)
 
 ### Basics
 
