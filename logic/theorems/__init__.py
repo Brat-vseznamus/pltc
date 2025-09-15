@@ -1,0 +1,3 @@
+from .deduction_theorem import deduction_theorem
+from .replace_theorem import replace_theorem
+from .advance_context_theorem import advance_context_theorem
