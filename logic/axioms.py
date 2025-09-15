@@ -1,8 +1,9 @@
 from logic.expr import Expr, V, I, O, A, N
+from logic.proof_type import ProofTypeBase
 
 from typing import List
 
-class Axiom:
+class Axiom(ProofTypeBase):
     Axioms: List[Expr] = [
         I(V("A"), I(V("B"), V("A"))),
         I(I(V("A"), V("B")), I(I(V("A"), I(V("B"), V("C"))), I(V("A"), V("C")))),

@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from logic.expr import Expr
 
@@ -18,3 +18,16 @@ def context_nested(a: Context, b: Context) -> bool:
 
 def context_equals(a: Context, b: Context) -> bool:
     return context_nested(a, b) and context_nested(b, a)
+
+def remove_from_context(context: Context, e: Expr) -> Context:
+    return [assum for assum in context if e != assum]
+
+def context_contains_expr(context: Context, e: Expr) -> bool:
+    return e in context
+
+def add_to_context(context: Context, es: List[Expr]) -> Context:
+    new_context = [assum for assum in context]
+    for e in es:
+        if e not in new_context:
+            new_context.append(e)
+    return new_context

@@ -2,26 +2,26 @@ from typing import List, Union, Tuple, Optional
 
 from logic.expr import Expr, Impl
 from logic.axioms import Axiom
-from logic.context import Context
+from logic.context import Context, context_contains_expr, context_nested
+from logic.proof_type import ProofTypeBase
 
-class Assumption:
-    def __init__(self, index: int):
-        self.index = index
+class Assumption(ProofTypeBase):
+    def __init__(self):
+        pass
         
     def __str__(self):
-        return f"Assum.{self.index}"
+        return f"Assum."
 
-class MP:
+class MP(ProofTypeBase):
     def __init__(self, index1: int, index2: int):
         self.index1 = index1
         self.index2 = index2
     
     def __str__(self):
         return f"MP {self.index1}, {self.index2}"
-
-# class Lemma:
-#     def __init__(self, proof: "Proof"):
-#         self.proof = proof
+    
+    def move_by_index(self, shift) -> ProofTypeBase:
+        return MP(self.index1 + shift, self.index2 + shift)
 
 ProofType = Union[Axiom, Assumption, MP]
 
@@ -31,6 +31,50 @@ class ProofStep:
         self.proof_type = proof_type
 
 class Proof:
+    def proof_with_lemmas(context: Context, steps: List[Union[ProofStep, "Proof"]]) -> Optional["Proof"]:
+        proof = Proof(context, list())
+
+        old_step_to_new = [0 for _ in range(len(steps))]
+        for id, step in enumerate(steps):
+            if isinstance(step, ProofStep):
+                if isinstance(step.proof_type, MP):
+                    if not (0 <= step.proof_type.index1 < id):
+                        return None
+                    if not (0 <= step.proof_type.index2 < id):
+                        return None
+                    
+                    proof.steps.append(
+                        ProofStep(
+                            step.formula, 
+                            MP(
+                                old_step_to_new[step.proof_type.index1],
+                                old_step_to_new[step.proof_type.index2]
+                            )
+                        )
+                    )
+                else:
+                    proof.steps.append(step)
+            elif isinstance(step, Proof):
+                if not context_nested(step.context, context):
+                    return None
+                if len(step.steps) == 0:
+                    return None
+
+                current_id = len(proof.steps)
+                for lemma_step in step.steps:
+                    proof.steps.append(
+                        ProofStep(
+                            lemma_step.formula, 
+                            lemma_step.proof_type.move_by_index(current_id)
+                        )
+                    )
+            else:
+                return None
+            
+            old_step_to_new[id] = len(proof.steps) - 1
+
+        return proof
+
     def __init__(self, context: Context, steps: List[ProofStep]):
         self.context = context
         self.steps = steps
@@ -48,9 +92,7 @@ class Proof:
         
         # is Assumption
         if isinstance(step.proof_type, Assumption):
-            if not (0 <= step.proof_type.index < len(self.context)):
-                return False
-            return step.formula == self.context[step.proof_type.index]
+            return context_contains_expr(self.context, step.formula)
         
         # is Axiom
         if isinstance(step.proof_type, Axiom):

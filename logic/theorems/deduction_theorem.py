@@ -1,29 +1,20 @@
 from typing import Optional
 
-from logic.expr import I
+from logic.expr import I, Expr
+from logic.context import remove_from_context
+
 import logic.proof as proof
 
-def deduction_theorem(p: proof.Proof, assumption_id: int) -> Optional[proof.Proof]:
-    if not (0 <= assumption_id < len(p.context)):
+def deduction_theorem(p: proof.Proof, assumption: Expr) -> Optional[proof.Proof]:
+    if assumption not in p.context:
         return None
-    
-    def new_assum_id(id: int) -> Optional[int]:
-        if id < assumption_id:
-            return id
-        elif id == assumption_id:
-            return None
-        else:
-            return id - 1
 
     # p.context = G & {a}
-    a = p.context[assumption_id]
+    a = assumption
     new_p = proof.Proof(list(), list())
 
     # new_p.context = G
-    for id, assum in enumerate(p.context):
-        if id == assumption_id:
-            continue
-        new_p.context.append(assum)
+    new_p.context = remove_from_context(p.context, a)
     
     old_id_to_new_id = dict()
     for id, step in enumerate(p.steps):
@@ -36,8 +27,7 @@ def deduction_theorem(p: proof.Proof, assumption_id: int) -> Optional[proof.Proo
                 proof.ProofStep(I(a, f), proof.MP(current_id + 1, current_id))
             ])
         if isinstance(step.proof_type, proof.Assumption):
-            new_id = new_assum_id(step.proof_type.index)
-            if new_id is None:
+            if step.formula == a:
                 # a -> a
                 new_p.steps.extend([
                     proof.ProofStep(I(f, I(f, f)), proof.Axiom(0)),
@@ -48,7 +38,7 @@ def deduction_theorem(p: proof.Proof, assumption_id: int) -> Optional[proof.Proo
                 ])
             else:
                 new_p.steps.extend([
-                    proof.ProofStep(f, proof.Assumption(new_id)),
+                    proof.ProofStep(f, proof.Assumption()),
                     proof.ProofStep(I(f, I(a, f)), proof.Axiom(0)),
                     proof.ProofStep(I(a, f), proof.MP(current_id + 1, current_id))
                 ])
