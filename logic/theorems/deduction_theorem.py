@@ -6,6 +6,17 @@ from logic.context import remove_from_context
 import logic.proof as proof
 
 def deduction_theorem(p: proof.Proof, assumption: Expr) -> Optional[proof.Proof]:
+    """
+    Return proof for `G |- a -> e` from given proof of `G & {a} |- e`.
+    
+    *Or* 
+    
+    return `None` if `a` not in context `G`
+
+    Args:
+        p (proof.Proof) : proof of `G & {a} |- e`
+        assumption (Expr) : expresion for `a`
+    """
     if assumption not in p.context:
         return None
 

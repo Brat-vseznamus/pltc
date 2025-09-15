@@ -1,7 +1,7 @@
 from logic.proof import Proof
 
-def print_proof(proof: Proof, file = None):
-    if proof.is_correct()[0]:
+def print_proof(proof: Proof, file = None, show_anyway: bool = False):
+    if proof.is_correct()[0] or show_anyway:
         number_of_digits = len(f"{len(proof.steps)}")
         def index_str(i: int) -> str:
             s = f"{i}"

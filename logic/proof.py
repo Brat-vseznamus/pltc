@@ -31,50 +31,6 @@ class ProofStep:
         self.proof_type = proof_type
 
 class Proof:
-    def proof_with_lemmas(context: Context, steps: List[Union[ProofStep, "Proof"]]) -> Optional["Proof"]:
-        proof = Proof(context, list())
-
-        old_step_to_new = [0 for _ in range(len(steps))]
-        for id, step in enumerate(steps):
-            if isinstance(step, ProofStep):
-                if isinstance(step.proof_type, MP):
-                    if not (0 <= step.proof_type.index1 < id):
-                        return None
-                    if not (0 <= step.proof_type.index2 < id):
-                        return None
-                    
-                    proof.steps.append(
-                        ProofStep(
-                            step.formula, 
-                            MP(
-                                old_step_to_new[step.proof_type.index1],
-                                old_step_to_new[step.proof_type.index2]
-                            )
-                        )
-                    )
-                else:
-                    proof.steps.append(step)
-            elif isinstance(step, Proof):
-                if not context_nested(step.context, context):
-                    return None
-                if len(step.steps) == 0:
-                    return None
-
-                current_id = len(proof.steps)
-                for lemma_step in step.steps:
-                    proof.steps.append(
-                        ProofStep(
-                            lemma_step.formula, 
-                            lemma_step.proof_type.move_by_index(current_id)
-                        )
-                    )
-            else:
-                return None
-            
-            old_step_to_new[id] = len(proof.steps) - 1
-
-        return proof
-
     def __init__(self, context: Context, steps: List[ProofStep]):
         self.context = context
         self.steps = steps
@@ -123,4 +79,46 @@ class Proof:
             G += " "
         return f"{G}|- {step.formula} [{step.proof_type}]"
 
+def proof_with_lemmas(context: Context, steps: List[Union[ProofStep, Proof]]) -> Optional[Proof]:
+    proof: Proof = Proof(context, list())
+
+    old_step_to_new = [0 for _ in range(len(steps))]
+    for id, step in enumerate(steps):
+        if isinstance(step, ProofStep):
+            if isinstance(step.proof_type, MP):
+                if not (0 <= step.proof_type.index1 < id):
+                    return None
+                if not (0 <= step.proof_type.index2 < id):
+                    return None
+                
+                proof.steps.append(
+                    ProofStep(
+                        step.formula, 
+                        MP(
+                            old_step_to_new[step.proof_type.index1],
+                            old_step_to_new[step.proof_type.index2]
+                        )
+                    )
+                )
+            else:
+                proof.steps.append(step)
+        elif isinstance(step, Proof):
+            if not context_nested(step.context, context):
+                return None
+            if len(step.steps) == 0:
+                return None
+
+            current_id = len(proof.steps)
+            for lemma_step in step.steps:
+                proof.steps.append(
+                    ProofStep(
+                        lemma_step.formula, 
+                        lemma_step.proof_type.move_by_index(current_id)
+                    )
+                )
+        else:
+            return None
         
+        old_step_to_new[id] = len(proof.steps) - 1
+
+    return proof
