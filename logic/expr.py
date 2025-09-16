@@ -1,6 +1,15 @@
 from typing import List, Dict, Union, Tuple, Optional
 from enum import Enum
 
+def expr(input: str) -> "Expr":
+    """
+    Generator of expressions or raise `TypeError`
+    """
+    result = parse_expr(input)
+    if isinstance(result, ParsingError):
+        raise TypeError(result)
+    return result
+
 class Expr:
     def __init__(self, value: str, children: List["Expr"]):
         self.value = value
@@ -217,7 +226,7 @@ def parse_tokens(input: str) -> Union[List[Token], ParsingError]:
         return ParsingError(result[left_bracket_stack.pop()].position, "no close bracket for this open bracket")
     
     return result
-    
+
 def parse_expr(input: str) -> Union[Expr, ParsingError]:
     tokens = parse_tokens(input)
     if isinstance(tokens, ParsingError):
