@@ -39,6 +39,12 @@ def run_parsing_test():
     assert test_correct_parsing("A -> (B | !C & D)", I(V("A"), O(V("B"), A(N(V("C")), V("D")))))
     assert test_correct_parsing("A -> B | (!C & D)", I(V("A"), O(V("B"), A(N(V("C")), V("D")))))
     assert test_correct_parsing("(A) -> (B) | (!C & (D))", I(V("A"), O(V("B"), A(N(V("C")), V("D")))))
+    assert test_correct_parsing("A -> A & B -> C -> A & B", I(V("A"), I(A(V("A"), V("B")), I(V("C"), A(V("A"), V("B"))))))
+    assert test_correct_parsing("A | A & B | C | A & B", O(O(O(V("A"), A(V("A"), V("B"))), V("C")), A(V("A"), V("B"))))
+    assert test_correct_parsing("A | A & B -> C | A & B", I(O(V("A"), A(V("A"), V("B"))), O(V("C"), A(V("A"), V("B")))))
+    assert test_correct_parsing("A | A & B -> C -> A & B", I(O(V("A"), A(V("A"), V("B"))), I(V("C"), A(V("A"), V("B")))))
+
+    
     
     
     

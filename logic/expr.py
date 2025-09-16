@@ -326,7 +326,7 @@ def _parse_layer(tokens: List[Token], last_position: int, wait_right_bracket: bo
     if len(current_operator_stack) == 0:
         return [current_stack[0], rest]
 
-    def combine_expression(items: List[Expr], operators: List[Operator]) -> Tuple[Expr, List[Expr], List[Operator]]:
+    def combine_expression(items: List[Expr], operators: List[Operator], top_level: bool) -> Tuple[Expr, List[Expr], List[Operator]]:
         if len(items) == 0:
             raise TypeError("impossible")
         if len(items) == 1:
@@ -340,15 +340,19 @@ def _parse_layer(tokens: List[Token], last_position: int, wait_right_bracket: bo
         while len(rest_ops) > 0:
             new_op = rest_ops[0]
             if new_op.priority() > op.priority():
-                left = op.to_expression([left, right])
-                right = rest_items[1]
-                op = new_op
+                if top_level:
+                    left = op.to_expression([left, right])
+                    right = rest_items[1]
+                    op = new_op
 
-                rest_items = rest_items[1:]
-                rest_ops = rest_ops[1:]
+                    rest_items = rest_items[1:]
+                    rest_ops = rest_ops[1:]
+                else:
+                    rest_items[0] = op.to_expression([left, right])
+                    break
                 
             elif new_op.priority() < op.priority():
-                right, rest_items, rest_ops = combine_expression(rest_items, rest_ops)
+                right, rest_items, rest_ops = combine_expression(rest_items, rest_ops, False)
             else:
                 if op.is_right_assosiated():
                     left = op.to_expression([left, right])
@@ -358,11 +362,11 @@ def _parse_layer(tokens: List[Token], last_position: int, wait_right_bracket: bo
                     rest_items = rest_items[1:]
                     rest_ops = rest_ops[1:]
                 else:
-                    right, rest_items, rest_ops = combine_expression(rest_items, rest_ops)
+                    right, rest_items, rest_ops = combine_expression(rest_items, rest_ops, False)
         
         return op.to_expression([left, right]), rest_items, rest_ops
     
-    return combine_expression(current_stack, current_operator_stack)[0], rest
+    return combine_expression(current_stack, current_operator_stack, True)[0], rest
 
         
         
