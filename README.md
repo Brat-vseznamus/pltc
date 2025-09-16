@@ -83,6 +83,50 @@ Proof(
 )
 ```
 
+### _NEW FEATURE_: Parsing expression from str
+
+Now expressions can be parsed from string representation of them by function `expr` from module [`logic.expr`](logic/expr.py)
+
+Example if usage:
+
+```python
+# A->B->C, A, B |- C
+def proof_swap_lemma() -> Proof:
+    proof = Proof(
+        [V("A"), V("B"), I(V("A"), I(V("B"), V("C")))],
+        [
+            ProofStep(V("A"), Assumption()),
+            ProofStep(V("B"), Assumption()),
+            ProofStep(I(V("A"), I(V("B"), V("C"))), Assumption()),
+            ProofStep(I(V("B"), V("C")), MP(2, 0)),
+            ProofStep(V("C"), MP(3, 1)),
+        ]
+    )
+
+    assert proof.is_correct()[0]
+    return proof
+```
+
+Is the same as
+ 
+```python
+# A->B->C, A, B |- C
+def proof_swap_lemma_with_str() -> Proof:
+    proof = Proof(
+        [expr("A"), expr("B"), expr("A -> B -> C")],
+        [
+            ProofStep(expr("A"), Assumption()),
+            ProofStep(expr("B"), Assumption()),
+            ProofStep(expr("A -> B -> C"), Assumption()),
+            ProofStep(expr("B -> C"), MP(2, 0)),
+            ProofStep(expr("C"), MP(3, 1)),
+        ]
+    )
+
+    assert proof.is_correct()[0]
+    return proof
+```
+
 ## 2. Examples
 
 ### View results
